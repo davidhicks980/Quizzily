@@ -1,0 +1,220 @@
+@import "./components/dh-style_plot.css";
+@import "./components/dh-style_range-input.css";
+@import "./components/dh-style_toggle.css";
+@import "./libs/latex-renderer__katex.min.css";
+@import "./libs/css-framework__w3-css.css";
+@import "./charting-library__chartist.scss";
+@import "./chartist-settings";
+$dhcolor: rgb(75, 156, 211);
+
+.numberAnswer {
+  margin: 25px 25px;
+  box-sizing: border-box;
+  height: 3.5em;
+  width: 250px;
+  display: block;
+  border: none;
+  padding-top: 0.75em;
+  padding-left: 0rem;
+  border-bottom: solid 1px $dhcolor;
+  transition: all 0.3s cubic-bezier(0.01, 0.01, 0.01, 0.5);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 98%,
+    $dhcolor 2%
+  );
+  background-position: -20em 0;
+  background-size: 20em 100%;
+  background-repeat: no-repeat;
+  color: rgb(44, 44, 44);
+  &:focus,
+  &:valid {
+    outline: none;
+    background-position: 0 0;
+    transition-property: linear-gradient translate;
+    &::placeholder {
+      transition: 0.2s;
+      color: rgb(75, 156, 211);
+      font-size: xx-small;
+      transform: translate(0rem, -1.7rem);
+    }
+  }
+}
+
+.fitb-text-input--correct {
+  border-radius: 5px;
+  border: solid 2px $dhcolor;
+  margin: 40px 25px;
+  width: 200px;
+  display: block;
+  transition: all 0.3s cubic-bezier(0.8, 0.16, 0.16, 1.05);
+  background-repeat: no-repeat;
+  background-position: 160px;
+  text-indent: 10px;
+
+  background-image: url("data:image/svg+xml,%3Csvg width='30px' height='23px' viewBox='0 0 45 34' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Cg stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg transform='translate%28-56.000000, -59.000000%29' fill='%232EEC96'%3E%3Cpolygon points='70.1468531 85.8671329 97.013986 59 100.58042 62.5664336 70.1468531 93 56 78.8531469 59.5664336 75.2867133'%3E%3C/polygon%3E%3C/g%3E%3C/g%3E%3C/svg%3E%0A");
+  &:disabled {
+    background-color: white;
+  }
+}
+
+.fitb-text-input--incorrect {
+  border-radius: 5px;
+  border: solid 2px red;
+  margin: 40px 25px;
+  width: 200px;
+  display: block;
+  text-indent: 10px;
+  transition: all 0.3s cubic-bezier(0.8, 0.16, 0.16, 1.05);
+  background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 99%,
+      $dhcolor 1%
+    )
+    size 0.6;
+  color: rgb(44, 44, 44);
+  &:disabled {
+    background-color: white;
+  }
+  background-repeat: no-repeat;
+  background-position: 160px;
+  background-size: 20px 20px;
+  background-image: url("data:image/svg+xml,%3Csvg width='30px' height='30px' viewBox='0 0 30 30' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Cg stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cg transform='translate%28-128.000000, -59.000000%29' fill='%23F44336'%3E%3Cpolygon points='157.848404 61.9920213 145.980053 73.8603723 157.848404 85.7287234 154.856383 88.7207447 142.988032 76.8523936 131.119681 88.7207447 128.12766 85.7287234 139.996011 73.8603723 128.12766 61.9920213 131.119681 59 142.988032 70.8683511 154.856383 59'%3E%3C/polygon%3E%3C/g%3E%3C/g%3E%3C/svg%3E%0A");
+}
+
+@supports (-webkit-appearance: none) or (-moz-appearance: none) {
+  input[type="checkbox"],
+  input[type="radio"] {
+    --active: rgb(75, 156, 211);
+    --active-inner: #fff;
+    --focus: 2px rgba(39, 94, 254, 0.3);
+    --border: #bbc1e1;
+    --border-hover: rgb(75, 156, 211);
+    --background: #fff;
+    --disabled: #f6f8ff;
+    --disabled-inner: #e1e6f9;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 21px;
+    outline: none;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    margin: 0;
+    cursor: pointer;
+    border: 1px solid var(--bc, var(--border));
+    background: var(--b, var(--background));
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.2s;
+    &:after {
+      content: "";
+      display: block;
+      left: 0;
+      top: 0;
+      position: absolute;
+      transition: transform var(--d-t, 0.3s) var(--d-t-e, ease),
+        opacity var(--d-o, 0.2s);
+    }
+    &:checked {
+      --b: var(--active);
+      --bc: var(--active);
+      --d-o: 0.3s;
+      --d-t: 0.6s;
+      --d-t-e: cubic-bezier(0.2, 0.85, 0.32, 1.2);
+    }
+    /*   &:disabled {
+      --b: var(--disabled);
+      cursor: not-allowed;
+      opacity: 0.9;
+      &:checked {
+        --b: var(--disabled-inner);
+        --bc: var(--border);
+      }
+      & + label {
+        cursor: not-allowed;
+      }
+    }*/
+    &:hover {
+      &:not(:checked) {
+        &:not(:disabled) {
+          --bc: var(--border-hover);
+        }
+      }
+    }
+    &:focus {
+      box-shadow: 0 0 0 var(--focus);
+    }
+    &:not(.switch) {
+      width: 21px;
+      &:after {
+        opacity: var(--o, 0);
+      }
+      &:checked {
+        --o: 1;
+      }
+    }
+    & + label {
+      font-size: 14px;
+      line-height: 21px;
+      display: inline-block;
+      vertical-align: top;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+  }
+  input[type="checkbox"] {
+    &:not(.switch) {
+      border-radius: 7px;
+      &:after {
+        width: 5px;
+        height: 9px;
+        border: 2px solid var(--active-inner);
+        border-top: 0;
+        border-left: 0;
+        left: 7px;
+        top: 4px;
+        transform: rotate(var(--r, 20deg));
+      }
+      &:checked {
+        --r: 43deg;
+      }
+    }
+    &.switch {
+      width: 38px;
+      border-radius: 11px;
+      &:after {
+        left: 2px;
+        top: 2px;
+        border-radius: 50%;
+        width: 15px;
+        height: 15px;
+        background: var(--ab, var(--border));
+        transform: translateX(var(--x, 0));
+      }
+      &:checked {
+        --ab: var(--active-inner);
+        --x: 17px;
+      }
+      &:disabled {
+        &:not(:checked) {
+          &:after {
+            opacity: 0.6;
+          }
+        }
+      }
+    }
+  }
+  input[type="radio"] {
+    border-radius: 50%;
+    &:after {
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      background: var(--active-inner);
+      opacity: 0;
+      transform: scale(var(--s, 0.7));
+    }
+    &:checked {
+      --s: 0.5;
+    }
+  }
+}

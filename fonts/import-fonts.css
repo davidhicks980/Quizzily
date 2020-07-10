@@ -1,0 +1,26 @@
+@font-face {
+  font-family: "Roboto";
+  src: url("Roboto-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("Roboto-Bold.ttf");
+}
+@font-face {
+  font-family: "Roboto-Slab";
+  src: url("RobotoSlab-VariableFont_wght.ttf");
+}
+
+@font-face {
+  font-family: "KaTeX_Main";
+  src: url("./KaTeX_Main-Regular.ttf");
+}
+@font-face {
+  font-family: "KaTeX_Main";
+  src: url("./KaTeX_Main-Regular.woff2");
+}
+@font-face {
+  font-family: "KaTeX_Main";
+  src: url("./KaTeX_Main-Regular.woff");
+}
