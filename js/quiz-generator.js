@@ -60,7 +60,7 @@ var quiz = (function () {
       };
       let content = [];
       const choices = [];
-      let disabled = activeIndex > 0 ? true : false;
+      let disabled = activeIndex > 0 ? "disabled" : null;
 
       // iterates through json to draw questions
       switch (question.type) {

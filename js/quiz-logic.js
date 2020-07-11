@@ -3,6 +3,7 @@ var State = (function () {
   let activeQuestionIndices = [];
   let attempts;
   let quizComplete = false;
+  console.log($id("Results"));
   logic.armSubmitButton = (questions, attemptsObject) => {
     attempts = attemptsObject;
     let i;
@@ -125,7 +126,7 @@ var State = (function () {
         completeCount++;
       }
     }
-    if (completeCount === attempts.length) {
+    if (completeCount === Math.max(activeQuestionIndices) - 1) {
       getResults(attempts, questions);
     }
   }
@@ -195,15 +196,17 @@ var State = (function () {
     $id(`feedback${question.number}`).innerHTML = feedback;
   }
   function summonContinueButton(attempt) {
-    if (attempt.activeIndex < Math.max(...activeQuestionIndices) + 1) {
+    if (attempt.activeIndex < Math.max(...activeQuestionIndices)) {
       submitButtonQuizNotComplete(attempt);
     } else {
+      getResults(attempts);
       submitButtonQuizComplete(attempt);
     }
   }
   //Handles methods occurring after quiz completion
   function getResults(attempts) {
     quizComplete = true;
+    console.log("finished");
     let results = [],
       correct = 0,
       total = 0,
@@ -261,7 +264,6 @@ var State = (function () {
   }
   function submitButtonQuizComplete(attempt) {
     let attemptHTML = attempt.htmlElementIDs;
-    console.log(attemptHTML);
     $id(attemptHTML.submitButtonID).innerHTML = "Results";
     $id(attemptHTML.submitButtonID).addEventListener("click", function () {
       $id("Results").style.display = "";
