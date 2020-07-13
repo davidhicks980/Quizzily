@@ -6,14 +6,16 @@ const $id = function (id) {
   return document.getElementById(id);
 };
 const $class = function (id) {
-  return document.getElementsByClassName(id);
+  return $class(id);
 };
 
 function w3_close() {
-  $id("pkMobileMenu").style.display = "none";
+  $id("resultsMobileNav").style.display = "none";
 }
 
-function tabHover(event, contentID) {
+function setActivePagesetActivePagesetActivePagesetActivePagesetActivePagesetActivePagesetActivePagesetActivePage\(
+  contentID
+) {
   let i;
   let x;
   let tablinks;
@@ -32,9 +34,9 @@ function loadQuiz() {
   // ///////////////////////////////////////////////////////////////
 
   // Get quiz container and navigation bar in order to append nav items and quiz questions
-  const quizContainer = $id("pkQuizContainer");
+  const quizContainer = $id("pkContainerQuiz");
   const desktopNav = $id("pkDesktopNavbar");
-  const mobileNav = $id("pkMobileMenu");
+  const mobileNav = $id("resultsMobileNav");
   const navBar = { small: [], large: [] };
   const containers = [];
   // Creates the home page with instructions.
@@ -90,13 +92,13 @@ function loadQuiz() {
 
   function buildQuiz(attempts) {
     navBar.large.push(
-      `<button class="navButton w3-large tablink" onclick="tabHover(event,'Introduction')">Introduction</button>`
+      `<button class="navButton w3-large tablink" onclick="setActivePage\('Introduction')">Introduction</button>`
     );
     navBar.small.push(
-      `<button class="navButton w3-large tablink" onclick="tabHover(event,'Introduction')">Introduction</button>`
+      `<button class="navButton w3-large tablink" onclick="setActivePage\('Introduction')">Introduction</button>`
     );
     containers.push(introduction);
-    $id("titleDiv").innerText = quizName;
+    $id("title-div").innerText = quizName;
     class Attempt {
       constructor(
         activeIndex,
@@ -245,7 +247,7 @@ function loadQuiz() {
     appendQuizToDOM(desktopNav, navBar, mobileNav, quizContainer, containers);
     generatePlots(plotList);
   }
-  function armSubmitButton(questions, attempts) {
+  function listenForStateChanges(questions, attempts) {
     let i;
     let len = questions.length;
     for (i = 0; i < len; i++) {
@@ -293,7 +295,7 @@ function loadQuiz() {
     }
   }
   buildQuiz(attempts);
-  armSubmitButton(questions, attempts);
+  listenForStateChanges(questions, attempts);
 
   function checkForQuizCompletion(attempts, questions) {
     let completeCount = 0;

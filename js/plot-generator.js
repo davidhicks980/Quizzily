@@ -11,12 +11,12 @@ const renderPlot = (plotName, count) => {
     //document.getElementById("instructions").innerHTML = String(equationInfo.instructions);
 
     const multipleDose = plot.multiple_dose;
-    const linTopBound = plot.topBound;
-    const linBottomBound = plot.bottomBound;
+    const linearTopBound = plot.topBound;
+    const linearBottomBound = plot.bottomBound;
     const logTopBound = Math.log10(plot.topBound);
     const logBottomBound = Math.log10(plot.bottomBound);
-    let bottomBound = linBottomBound;
-    let topBound = linTopBound;
+    let bottomBound = linearBottomBound;
+    let topBound = linearTopBound;
     let bottomBoundArray = [],
       topBoundArray = [];
     //HTML divs
@@ -56,8 +56,8 @@ const renderPlot = (plotName, count) => {
         fixToggle.disabled = true;
         fixToggle.checked = false;
       } else {
-        topBound = linTopBound;
-        bottomBound = linBottomBound;
+        topBound = linearTopBound;
+        bottomBound = linearBottomBound;
         fixToggle.disabled = false;
       }
     });
@@ -144,7 +144,7 @@ const renderPlot = (plotName, count) => {
 
         sliderContainer.appendChild(sliderSelector);
         valueContainer.innerHTML = sliderSelector.value;
-        labelContainer.innerHTML = `${variable.name} (${variable.unit})`;
+        labelContainer.innerHTML = `${variable.name} (${variable.units})`;
         index++;
       }
       const attachListeners = () => {

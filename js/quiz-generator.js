@@ -19,7 +19,7 @@ var quiz = (function () {
       tries,
       submissionCount,
       completion,
-      htmlElementIDs,
+      elementSelectors,
       disabled
     ) {
       this.activeIndex = activeIndex;
@@ -28,8 +28,11 @@ var quiz = (function () {
       this.tries = tries;
       this.submissionCount = submissionCount;
       this.completion = completion;
-      this.htmlElementIDs = htmlElementIDs;
+      this.elementSelectors = elementSelectors;
       this.disabled = disabled;
+    }
+    accessDOM(type) {
+      return document.getElementById(this.elementSelectors[type]);
     }
   }
 
@@ -53,10 +56,10 @@ var quiz = (function () {
       let contentID = `content_${String(question.number)}`;
       let submitID = `submit_${question.type}_q_${question.number}`;
       let htmlIDs = {
-        tabID: tabID,
-        smallTabID: smallTabID,
-        contentID: contentID,
-        submitButtonID: submitID,
+        desktopMenuButton: tabID,
+        mobileMenuButton: smallTabID,
+        content: contentID,
+        submitButton: submitID,
       };
       let content = [];
       const choices = [];
@@ -160,20 +163,18 @@ var quiz = (function () {
 
       containers.push(content);
       //inserts route and question info into a mobile navigation button
-      navBar.small.push(
-        templates.smallNavBar(question, smallTabID, contentID, disabled)
-      );
+      let mobileTab = templates.smallNavBar(question, smallTabID, disabled);
+      let desktopTab = templates.largeNavBar(question, tabID, disabled);
+      navBar.small.push(mobileTab);
 
       //inserts route and question info into a desktop navigation button
-      navBar.large.push(
-        templates.largeNavBar(question, tabID, contentID, disabled)
-      );
+      navBar.large.push(desktopTab);
       index++;
     }
     //creates results button for mobile navigation
-    navBar.small.push(templates.resultsMobileNav());
+    navBar.small.push(templates.resultsMobileNav(index));
     //creates results button for desktop navigation
-    navBar.large.push(templates.resultsDesktopNav());
+    navBar.large.push(templates.resultsDesktopNav(index));
     //
     containers.push(templates.resultsDiv());
     appendQuizToDOM(navBar, containers);
@@ -182,7 +183,7 @@ var quiz = (function () {
   };
 
   function appendQuizToDOM(nav_bar, containers) {
-    const quizContainer = $id("pkQuizContainer");
+    const quizContainer = $id("pkContainerQuiz");
     const desktopNav = $id("pkDesktopNavbar");
     const mobileNav = $id("pkMobileMenu");
     desktopNav.innerHTML = nav_bar.large.join("");
@@ -203,7 +204,6 @@ var quiz = (function () {
   }
 
   let attempts = builder.buildQuiz();
-  State.armSubmitButton(questions, attempts);
-
+  State.listenForStateChanges(questions, attempts);
   return builder;
 })();

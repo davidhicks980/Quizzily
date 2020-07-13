@@ -2,6 +2,54 @@
 @import "./combined-css-libraries.css";
 @import "./components/dh-question_data_table.css";
 
+button.nav-button-large.nav-button-large--highlight {
+  background: rgb(66, 104, 0);
+  color: rgb(139, 206, 17);
+  font-weight: bold;
+}
+
+#resultsContainer {
+  width: 100%;
+}
+
+.hr-no-margin {
+  margin-bottom: 20px;
+}
+
+div.card-col-flexbox {
+  display: grid;
+  padding: 3em 2em 2em 2em;
+}
+
+div.card-col-flexbox #pk-quiz-card-header,
+div.card-col-flexbox #pk-quiz-card-footer {
+  display: flex;
+  flex-direction: row;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+div.pkBodyContainer {
+  display: grid;
+  grid-template-columns: 15% 70% 15%;
+  justify-items: center;
+}
+
+div.card-col-flexbox div.results--center-title {
+  width: 100%;
+  text-align: center;
+  line-height: 0px;
+}
+div.card-col-flexbox #pk-quiz-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#pk-quiz-card-header {
+  justify-content: space-between;
+}
+#pk-quiz-card-footer {
+  justify-content: space-evenly;
+}
 .ct-grid {
   stroke-dasharray: none !important;
 }
@@ -14,15 +62,15 @@
 .number-padding {
   padding: 5px 12px 5px 12px;
 }
-.number-flex {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  text-align: left;
+div.card-col-flexbox div.number-flex {
+  display: grid;
+  grid-template-columns: 10% 90%;
+  justify-items: right;
+  grid-gap: 1.5em;
+}
+
+div.card-col-flexbox div.fill-in-the-blank--container {
+  padding-right: 20vw;
 }
 table {
   border-collapse: separate;
@@ -64,11 +112,19 @@ table tr:last-child td:first-child {
 table tr:last-child td:last-child {
   border-bottom-right-radius: 6px;
 }
+
+table.results-table {
+  width: 50vw;
+  line-height: 1.7em;
+  text-align: center;
+}
 #resultsMobileNav {
   background-color: orange;
+  color: black;
 }
 #resultsDesktopNav {
   background-color: orange;
+  color: black;
 }
 textarea:focus,
 input:focus {
@@ -129,13 +185,10 @@ button.submit {
   color: #fff;
   font-family: "Roboto", Arial, sans-serif;
   font-size: 12pt;
-
-  letter-spacing: 1px;
   transition: all 0.2s cubic-bezier(0.1, 0.1, 0.1, 0.2);
   border: none;
-  height: 2em;
-  width: 6em;
   cursor: pointer;
+  padding: 0.5em 2em 0.5em 2em;
 }
 
 button.submit:hover {
@@ -162,19 +215,18 @@ button.nav-button-large {
 
 button.nav-button-large:hover {
   border: 1px solid darkgreen;
-  background: rgb(121, 168, 68);
   outline: none;
+  transition: ease-in 0.2s;
 }
 
 button.nav-button-large:focus {
   outline: none;
-  background: rgb(132, 170, 67);
   font-weight: bold;
 }
 button.nav-button-large:active {
   font-weight: bold;
 }
-#titleDiv {
+#title-div {
   font-family: "Roboto Slab";
   font-size: 24pt;
   color: rgb(54, 70, 27);
@@ -207,7 +259,7 @@ button.nav-button-large:active {
   font-size: 1.3em;
 }
 
-.pkQuizContainer {
+.pkContainerQuizDiv {
   height: 100%;
 }
 
@@ -215,6 +267,7 @@ button.nav-button-large:active {
   border-radius: 5px;
   min-height: min-content;
   max-width: 1050px;
+  width: fit-content;
 }
 
 @media screen and (min-width: 601px) {
@@ -230,6 +283,11 @@ button.nav-button-large:active {
 }
 
 @media screen and (max-width: 600px) {
+  div.pkBodyContainer {
+    display: grid;
+    grid-template-columns: 100%;
+    justify-items: center;
+  }
   .pkShowWhenSmall {
     display: "";
   }
@@ -281,7 +339,7 @@ button.nav-button-large:active {
     box-shadow: none;
     outline: 2px solid rgba(75, 156, 211, 0.877);
   }
-  #pkMobileMenuButton {
+  #pkButtonMobileMenu {
     color: rgb(49, 61, 25);
     background-image: linear-gradient(#ebebeb, #d5d5d5);
     border: solid rgb(131, 131, 131);
@@ -300,7 +358,7 @@ button.nav-button-large:active {
     box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.267);
   }
 
-  #pkMobileMenuButton:hover .arrowSideBtn {
+  #pkButtonMobileMenu:hover .arrowSideBtn {
     transition: all 0.4s;
     transform: rotate(-135deg);
     -webkit-transform: rotate(-135deg);
@@ -313,10 +371,10 @@ button.nav-button-large:active {
   }
   /*This area controls the small menu area. It does not include the buttons in the small menu*/
 
-  #pkMobileMenuContainer:hover #pkMobileMenu {
+  #pkContainerMobileMenu:hover #pkMobileMenu {
     display: inline-block;
   }
-  #pkMobileMenuButton:hover {
+  #pkButtonMobileMenu:hover {
     min-width: min-content;
     width: 100%;
     background-image: linear-gradient(rgb(245, 176, 48), orange);
@@ -329,14 +387,14 @@ button.nav-button-large:active {
     height: min-content;
   }
 
-  #pkMobileMenuContainer:hover #pkMobileMenuButton {
+  #pkContainerMobileMenu:hover #pkButtonMobileMenu {
     width: 100%;
     background-image: linear-gradient(rgb(245, 176, 48), orange);
     outline: 1px solid rgb(190, 137, 39);
     border-radius: 0px;
     border: none;
   }
-  #pkMobileMenuContainer:hover .arrowSideBtn {
+  #pkContainerMobileMenu:hover .arrowSideBtn {
     border: solid rgb(133, 86, 0);
     border-width: 0 2px 2px 0;
     transition: all 0.3s;
@@ -358,12 +416,12 @@ button.nav-button-large:active {
   .mainCard {
     border-radius: 0px;
   }
-  #pkMobileMenuContainer {
+  #pkContainerMobileMenu {
     width: 2%;
     position: fixed;
     z-index: 50;
   }
-  #pkMobileMenuContainer:hover {
+  #pkContainerMobileMenu:hover {
     width: 33%;
     background-color: rgb(158, 203, 79);
     padding-top: 0em;

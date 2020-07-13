@@ -1,124 +1,190 @@
 var State = (function () {
-  let logic = {};
-  let activeQuestionIndices = [];
-  let attempts;
-  let quizComplete = false;
-  console.log($id("Results"));
-  logic.armSubmitButton = (questions, attemptsObject) => {
-    attempts = attemptsObject;
-    let i;
-    let len = questions.length;
-    attemptsObject.forEach((att) => {
-      if (att.activeIndex != null) {
-        activeQuestionIndices.push(att.activeIndex);
-      }
-    });
-    for (i = 0; i < len; i++) {
-      let attempt = attemptsObject[i];
-      let button = $id(attempt.htmlElementIDs.submitButtonID);
-      if (attempt.activeIndex != null) {
-        button.addEventListener("click", function () {
-          questionButton(questions, attempt);
-        });
-      } else {
-        nonQuestionButton(i, len);
+  /* This object controls the state of the quiz by arming 
+  1. submit buttons (handle submitting quiz questions)
+  2. continue buttons (handle non-quiz material such as plot or educational information)   
+
+  The "listenForStateChanges" function takes in the attemptsObject from the quiz generator, which contains a collection of QuestionInstances. Variables from the QuestionInstance are defined below
+
+  class QuestionInstance {
+    constructor(
+      activeIndex, 
+      index, 
+      type,
+      tries,
+      submissionCount,
+      completion,
+      elementSelectors,
+      disabled
+    ) {
+      1. this.activeIndex = activeIndex 
+      2. this.index = index; 
+      3. this.type = type;
+      4. this.tries = tries;
+      5. this.submissionCount = submissionCount;
+      6. this.completion = completion;
+      7. this.elementSelectors = elementSelectors;
+      8. this.disabled = disabled;
+    }
+  }
+
+  1. Index of quiz questions relative to other quiz questions. 
+  >>Non-quiz questions are given a null value**
+  2. Index of page with regard to all other pages, including non-quiz questions
+  3. Type of question (e.g. fill-in-the-blank or select-all-that-apply)
+  4. Attempts the user is given to answer the question
+  5. Times the user has submitted the question
+  6. Whether the user has answered the question correctly (this is irrelevant to non-quiz questions)
+  7. All HTML element IDs relevant to the question
+    htmlIDs = {
+        tabID: tabID >>name of numerical desktop navigation button
+        smallTabID: smallTabID, >> ID of numerical mobile navigation button
+        contentID: contentID, >> ID of all quiz content
+        submitButtonID: submitID, >> ID of the submit button
+      };
+  8. Whether or not the question is disabled. All quiz questions are disabled at startup EXCEPT FOR THE FIRST. Non-quiz questions are not disabled.
+    
+
+  */
+
+  let state = {};
+  state.attempts = [];
+  state.activeIndices = [];
+  state.quizComplete = false;
+  state.quizLength = 0;
+  function getAttemptContext(index) {
+    let attempt = state.attempts[index];
+    attempt.previous = {};
+    attempt.next = {};
+    attempt.nextActive = {};
+    if (attempt.activeIndex != null) {
+      attempt.requiresAnswer = true;
+      if (state.activeIndices.includes(attempt.activeIndex + 1)) {
+        attempt.nextActive = state.attempts.filter((att) => {
+          return att.activeIndex === attempt.activeIndex + 1;
+        })[0];
       }
     }
-  };
-  function nonQuestionButton(i, len) {
-    let button = $id(attempts[i].htmlElementIDs.submitButtonID);
-    button.value = "Next Question";
-    let current, previous, next;
-    previous = i > 0 ? attempts[i - 1] : attempts[i];
-    current = attempts[i];
-    next = i < len - 1 ? attempts[i + 1] : attempts[i];
-    button.addEventListener("click", function () {
-      nonQuestionButtonListener(next, current, previous, button);
-    });
+    attempt.previous.attempt = index > 0 ? state.attempts[index - 1] : false;
+    attempt.next =
+      index < state.quizLength - 1 ? state.attempts[index + 1] : false;
+    if (attempt.next) {
+      attempt.next.activeQuestion =
+        attempt.next.activeIndex === null ? true : false;
+    }
+    if (attempt.previous.attempt) {
+      attempt.previous.content = $id(
+        attempt.previous.attempt.elementSelectors.content
+      );
+    }
+    return attempt;
   }
-  function questionButton(questions, attempt) {
-    let buttonID = attempt.htmlElementIDs.submitButtonID;
-    const questionType = attempt.type;
+
+  state.listenForStateChanges = (questions, attemptsObject) => {
+    state.attempts = attemptsObject;
+    state.quizLength = questions.length;
+    let i;
+    attemptsObject.forEach((att) => {
+      if (att.activeIndex != null) {
+        state.activeIndices.push(att.activeIndex);
+      }
+    });
+    for (i = 0; i < state.quizLength; i++) {
+      let attempt = getAttemptContext(i);
+      let button = attempt.accessDOM("submitButton");
+      attempt.requiresAnswer
+        ? button.addEventListener("click", function () {
+            submitLogic(questions, attempt);
+          })
+        : button.addEventListener("click", function () {
+            continueLogic(attempt);
+          });
+    }
+  };
+
+  function continueLogic(attempt) {
+    let button = attempt.accessDOM("submitButton");
+
+    if (
+      attempt.next.accessDOM("desktopMenuButton").disabled &&
+      button.innerHTML != "Previous"
+    ) {
+      alert("You need to finish all previous questions before moving on!");
+      button.innerHTML = "Previous";
+    } else if (attempt.index === quiz.length && state.quizComplete === true) {
+      button.innerHTML = "Results";
+      state.setActivePage("Results");
+    } else if (!attempt.next.accessDOM("desktopMenuButton").disabled) {
+      state.setActivePage(attempt.next.index);
+    } else {
+      state.setActivePage(attempt.previous.attempt.index);
+      button.innerHTML = "Continue";
+    }
+  }
+
+  function submitLogic(questions, attempt) {
     const index = attempt.index;
     const answers = [];
     let question = questions[index];
-    let studentAnswer, correctAnswer;
     let submission = {
-      buttonObject: $id(buttonID),
       index: index,
       question: question,
       questions: questions,
       attempt: attempt,
     };
-    switch (questionType) {
-      case "select-all-that-apply":
-        for (letter in question.options) {
-          if ($id(`q${question.number + letter}`).checked) {
-            answers.push(letter);
-          }
-        }
-        studentAnswer = answers.sort().join(",");
-        correctAnswer = question.correctAnswer.sort().join(",");
-        submission.studentAnswer = studentAnswer;
-        submission.rightAnswer = correctAnswer;
 
-        checkAnswer(submission);
-        if (submission.attempt.completion) {
-          attempt.complete = true;
-          attempt.studentAnswer = studentAnswer;
-          attempt.correctAnswer = correctAnswer;
-          disableAnswersAllThatApply(question);
-          checkForQuizCompletion(attempts, questions);
+    filterQuestionType();
+
+    function filterQuestionType() {
+      switch (attempt.type) {
+        case "select-all-that-apply":
+          checkSelectAllThatApply();
+          break;
+        case "fill-in-the-blank":
+          checkFillInTheBlank();
+          break;
+        case "sc-pk-graph":
+          null;
+          break;
+        case "md-pk-graph":
+          null;
+          break;
+      }
+    }
+
+    function checkSelectAllThatApply() {
+      for (letter in question.options) {
+        if ($id(`q${question.number + letter}`).checked) {
+          answers.push(letter);
         }
-        break;
-      case "fill-in-the-blank":
-        studentAnswer = $id(`fitb-${question.number}`).value;
-        correctAnswer = question.correctAnswer;
-        submission.studentAnswer = studentAnswer;
-        submission.rightAnswer = correctAnswer;
-        checkAnswer(submission);
-        if (submission.attempt.completion) {
-          attempt.studentAnswer = studentAnswer;
-          attempt.correctAnswer = correctAnswer;
-          attempt.complete = true;
-          submission.attempt.correct
-            ? disableCorrectFITBInput(question)
-            : disableIncorrectFITBInput(question);
-          checkForQuizCompletion(attempts, questions);
-        }
-        break;
-      case "sc-pk-graph":
-        null;
-        break;
-      case "md-pk-graph":
-        null;
-        break;
+      }
+      submission.studentAnswer = answers.sort().join(",");
+      submission.correctAnswer = question.correctAnswer.sort().join(",");
+      checkAnswer(submission);
+      if (submission.attempt.completion) {
+        attempt.complete = true;
+        attempt.studentAnswer = submission.studentAnswer;
+        attempt.correctAnswer = submission.correctAnswer;
+        disableSelectAllThatApply(question);
+        checkForQuizCompletion(state.attempts, questions);
+      }
+    }
+
+    function checkFillInTheBlank() {
+      submission.studentAnswer = $id(`fitb-${question.number}`).value;
+      submission.correctAnswer = question.correctAnswer;
+      checkAnswer(submission);
+      if (submission.attempt.completion) {
+        attempt.complete = true;
+        attempt.studentAnswer = submission.studentAnswer;
+        attempt.correctAnswer = submission.correctAnswer;
+        submission.attempt.correct
+          ? correctFillInTheBlankAnimation(question)
+          : incorrectFillInTheBlankAnimation(question);
+        checkForQuizCompletion(state.attempts, questions);
+      }
     }
   }
-  function nonQuestionButtonListener(next, current, previous, button) {
-    currContent = $id(current.htmlElementIDs.contentID);
-    prevContent = $id(previous.htmlElementIDs.contentID);
-    nextContent = $id(next.htmlElementIDs.contentID);
-    let nextActiveNavButton = $id(next.htmlElementIDs.smallTabID);
-    if (
-      typeof nextActiveNavButton != "undefined" &&
-      !nextActiveNavButton.disabled
-    ) {
-      nextContent.style.display = "";
-      currContent.style.display = "none";
-    } else if (current === next && quizComplete === true) {
-      button.value = "Results";
-      currContent.style.display = "none";
-      $id("Results").style.display = "";
-    } else if (button.value != "Previous") {
-      alert("You need to finish all previous questions before moving on!");
-      button.value = "Previous";
-    } else {
-      prevContent.style.display = "";
-      currContent.style.display = "none";
-      button.value = "Next Question";
-    }
-  }
+
   function checkForQuizCompletion(attempts, questions) {
     let completeCount = 0;
     for (const attempt of attempts) {
@@ -126,34 +192,39 @@ var State = (function () {
         completeCount++;
       }
     }
-    if (completeCount === Math.max(activeQuestionIndices) - 1) {
-      getResults(attempts, questions);
+    if (completeCount === Math.max(state.activeIndices) - 1) {
+      drawResultsPage(attempts, questions);
     }
   }
 
   function checkAnswer(submission) {
-    let { studentAnswer, rightAnswer, question, attempt } = submission;
-    if (studentAnswer == rightAnswer) {
+    let { studentAnswer, correctAnswer, question, attempt } = submission;
+    let button = attempt.accessDOM("submitButton");
+    if (studentAnswer == correctAnswer) {
       attempt.completion = true;
       attempt.correct = true;
+      button.innerHTML = "Next Question";
     } else if (studentAnswer == "") {
-      answerLeftBlank(question);
+      blankAnswerFeedback(question);
     } else if (attempt.submissionCount === attempt.tries - 1) {
       attempt.completion = true;
       attempt.correct = false;
+      button.innerHTML = "Next Question";
     } else if (attempt.submissionCount === 0) {
-      firstIncorrectSubmission(question);
+      tryAgainFeedback(question);
       attempt.submissionCount++;
+      button.innerHTML = "Try Again";
     } else {
       attempt.submissionCount++;
     }
     if (attempt.completion === true) {
-      submissionFeedback(question, attempt, attempt.correct);
+      completedQuestionFeedback(question, attempt.correct);
       summonContinueButton(attempt);
+      button.innerHTML = "Next Question";
     }
   }
 
-  function answerLeftBlank(question) {
+  function blankAnswerFeedback(question) {
     $id(
       `feedback${question.number}`
     ).innerHTML = `<h5 style="color: orange"> Please try to answer the question &#9785 </h5>`;
@@ -164,22 +235,22 @@ var State = (function () {
    * Disables fill-in-the-blank inputs. A separate function is used for correct and incorrect because correct * styling places a checkmark in the
    * input while incorrect places a red X in the input
    */
-  function disableCorrectFITBInput(question) {
+  function correctFillInTheBlankAnimation(question) {
     $id(`fitb-${question.number}`).className = "fitb-text-input--correct";
     $id(`fitb-${question.number}`).disabled = true;
   }
-  function disableIncorrectFITBInput(question) {
+  function incorrectFillInTheBlankAnimation(question) {
     $id(`fitb-${question.number}`).className = "fitb-text-input--incorrect";
     $id(`fitb-${question.number}`).disabled = true;
   }
   /* Disables all-that-apply check boxes */
-  function disableAnswersAllThatApply(question) {
+  function disableSelectAllThatApply(question) {
     //interates through answer choice (defined as letter) and disables
     for (letter in question.options) {
       $id(`q${question.number + letter}`).disabled = true;
     }
   }
-  function firstIncorrectSubmission(question) {
+  function tryAgainFeedback(question) {
     /* Displays incorrect feedback after first incorrect answer. Subsequent incorrect answers use the same feedback, and the feedback is not
      * erased on subsequent submits unless the user is correct, so this function only needs to be called on the first incorrect submission as
      * opposed to subsequent submissions.
@@ -187,7 +258,7 @@ var State = (function () {
     let feedback = `<h5> ${question.incorrectFeedback} </h5>`;
     $id(`feedback${question.number}`).innerHTML = feedback;
   }
-  function submissionFeedback(question, attempt, correct) {
+  function completedQuestionFeedback(question, correct) {
     //Called whenever the user runs out of tries and submit button is clicked. correct is a bool defining whether the user was correct. If they are correct, a header prints "Great Job"!, otherwise the header prints "Good Try!"
     let header =
       correct === true ? `<h4>Great Job!</h4>` : `<h4>Good Try!</h4>`;
@@ -196,47 +267,45 @@ var State = (function () {
     $id(`feedback${question.number}`).innerHTML = feedback;
   }
   function summonContinueButton(attempt) {
-    if (attempt.activeIndex < Math.max(...activeQuestionIndices)) {
-      submitButtonQuizNotComplete(attempt);
+    if (attempt.activeIndex < Math.max(...state.activeIndices)) {
+      showNextQuestion(attempt);
     } else {
-      getResults(attempts);
-      submitButtonQuizComplete(attempt);
+      drawResultsPage(state.attempts);
+      showResultsPage(attempt);
     }
   }
   //Handles methods occurring after quiz completion
-  function getResults(attempts) {
-    quizComplete = true;
-    console.log("finished");
+  function drawResultsPage(attempts) {
+    state.quizComplete = true;
     let results = [],
       correct = 0,
       total = 0,
       display = [],
+      header = [],
       feedback;
 
     for (attempt of attempts) {
-      if (attempt.correct) {
-        correct++;
-      }
-      if (attempt.completion) {
-        total++;
-      }
-      feedback = attempt.correct ? "&#10003" : "&#10005";
-      results.push(
-        //question # | correct answer | your answer | result | feedback
-        `<tr>
+      if (attempt.activeIndex != null) {
+        if (attempt.correct) {
+          correct++;
+        }
+        if (attempt.completion) {
+          total++;
+        }
+        feedback = attempt.correct ? "&#10003" : "&#10005";
+        results.push(
+          `<tr>
               <td>${attempt.activeIndex + 1}</td>
               <td>${attempt.correctAnswer}</td>
               <td>${attempt.studentAnswer}</td>
               <td>${feedback}</td>
             </tr>`
-      );
+        );
+      }
     }
+    header = `<h2>Score: <sup>${correct}</sup>/<sub>${total}</sub></h2><br />`;
 
-    results.push(
-      `<h2>Score: <sup>${correct}</sup>/<sub>${total}</sub></h2><br />`
-    );
-
-    display.push(templates.resultsContainer(results.join("")));
+    display.push(templates.resultsContainer(header, results.join("")));
     appendResultsToDOM(display);
   }
   function appendResultsToDOM(display) {
@@ -247,44 +316,41 @@ var State = (function () {
     resultsMobileNav.style.display = "";
     resultsContainer.innerHTML = display.join("");
   }
-  function submitButtonQuizNotComplete(attempt) {
-    let nextAttempt = attempts.filter((att) => {
-      return att.activeIndex === attempt.activeIndex + 1;
-    });
-    let nextIDs = nextAttempt[0].htmlElementIDs;
-    let currentIDs = attempt.htmlElementIDs;
-    console.log(currentIDs);
-    $id(nextIDs.tabID).disabled = false;
-    $id(nextIDs.smallTabID).disabled = false;
-    $id(currentIDs.submitButtonID).innerHTML = "Continue";
-    $id(currentIDs.submitButtonID).addEventListener("click", function () {
-      $id(nextIDs.contentID).style.display = "";
-      $id(currentIDs.contentID).style.display = "none";
+  function showNextQuestion(attempt) {
+    console.log(attempt.nextActive);
+    attempt.nextActive.accessDOM("desktopMenuButton").disabled = false;
+    attempt.nextActive.accessDOM("mobileMenuButton").disabled = false;
+    attempt.nextActive.disabled = false;
+    attempt.accessDOM("submitButton").innerHTML = "Continue";
+    attempt.accessDOM("submitButton").addEventListener("click", function () {
+      state.setActivePage(attempt.next.index);
     });
   }
-  function submitButtonQuizComplete(attempt) {
-    let attemptHTML = attempt.htmlElementIDs;
-    $id(attemptHTML.submitButtonID).innerHTML = "Results";
-    $id(attemptHTML.submitButtonID).addEventListener("click", function () {
-      $id("Results").style.display = "";
-      $id(attemptHTML.contentID).style.display = "none";
+  function showResultsPage(attempt) {
+    state.quizComplete = true;
+    submit = attempt.accessDOM("submitButton");
+    submit.innerHTML = "Results";
+    submit.addEventListener("click", function () {
+      state.setActivePage("Results");
     });
   }
-  return logic;
+
+  state.setActivePage = (index) => {
+    const tabs = $class("card-col-flexbox");
+    let content, mobileNav, desktopNav;
+    if (index === "Results") {
+      content = $id(index);
+      mobileNav = $id("resultsMobileNav");
+      desktopNav = $id("resultsDesktopNav");
+    } else {
+      let page = state.attempts[index];
+      content = page.accessDOM("content");
+      desktopNav = page.accessDOM("desktopMenuButton");
+      mobileNav = page.accessDOM("mobileMenuButton");
+    }
+    displaySelectedTab(tabs, content);
+    setTabName(index);
+    highlightNavButtons(mobileNav, desktopNav);
+  };
+  return state;
 })();
-
-function w3_close() {
-  $id("pkMobileMenu").style.display = "none";
-}
-function tabHover(e, contentID) {
-  let i;
-  let x;
-  let tablinks;
-  x = $class("tab");
-  for (i = 0; i < x.length; i++) {
-    x[i].style.display = "none";
-  }
-  tablinks = $class("tablink");
-
-  $id(contentID).style.display = "";
-}

@@ -44,7 +44,6 @@ fix axis
 
 
 </ul>
-<!--Div into which the plot is inserted -->
 `;
   },
   introHTML: function (id) {
@@ -77,14 +76,14 @@ fix axis
         `;
   },
 
-  selectAllThatApply: function (choice, letter) {
+  selectAllThatApply: function (question, letter) {
     return `
   <div class="w3-container">
   <div class="w3-left">
-  <input type="checkbox" class="checkbox" id="q${choice.number + letter}">
-  <label id = "l${choice.number + letter}" for="q${choice.number + letter}">${
-      choice.options[letter]
-    }</label>
+  <input type="checkbox" class="checkbox" id="q${question.number + letter}">
+  <label id = "l${question.number + letter}" for="q${
+      question.number + letter
+    }">${question.options[letter]}</label>
 </div>
 </div>
   <br />
@@ -92,168 +91,115 @@ fix axis
   },
 
   fillInTheBlank: function (question) {
-    return `<div class="container">
+    return `<div class="fill-in-the-blank--container">
     <input type="text" class = "w3-large numberAnswer" type="number" id="fitb-${question.number}" placeholder="Enter your answer..." required="required" />
+   
 </div>
 `;
   },
 
   quizContainer: function (question, choices, contentID, submitID) {
-    return `<div id=${contentID} class="tab" style="display:none">
-                    <div class="w3-row">
-                        <div class='w3-col m1 l2 w3-container'></div>
-                        <div class='w3-col m10 l8 s12'  id="pkQuizQuestionColumn">
-                            <div class="w3-card-2 w3-white mainCard">
-                                <header class="w3-container" style="padding-right: 5%; padding-left: 5%; padding-top:5%">
-                                <div class="number-flex">
-                                <div style="width:10%">
-                                  <span class="w3-round-small number-padding w3-amber">${1}</span>
-                                  </div>
-                                  <div style="width:90%">
-                                  ${question.question}
-                                <div>
-                              </div>
-                                </header>
-                                <div class="w3-container">
-                                    <hr width="100%" />
-                                </div>
-                                <div class="w3-container" style="padding-bottom:10px;">
-                                    <div class="answers"> ${choices.join(
-                                      ""
-                                    )} </div>
-                                    <hr />
-                                    <div style="padding-left: 20px; padding-right: 20px" class="w3-center"id="feedbackTitle${
-                                      question.number
-                                    }"></div> 
-                                    <div style="padding-left: 20px; padding-right: 20px" id="feedback${
-                                      question.number
-                                    }"></div>
-                                    
-                                </div>
-                                <footer class="w3-container w3-center"
-                                    style="padding-bottom: 2.0em; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; ">
-                                        <button id='${submitID}'; class="w3-center submit"  >Submit</button>
-                                </footer>
-                            </div>
-                        </div>
-                        <div class='w3-col m1 l2 w3-container'></div>
-                    </div>
-                </div>`;
-  },
-  plotContainer: function (question, plot, contentID, submitID) {
-    return `      
-    <div id="${contentID}" class="tab" style="display:none">
-        <div class="w3-row">
-          <div class="w3-col m1 l2 w3-container"></div>
-          <div class="w3-col m10 l8 s12" id="pkQuizQuestionColumn">
-            <div
-              class="w3-card-2 w3-white mainCard w3-center"
-              style="margin-left: auto; margin-right: auto; min-height: 800px'">
-              <header class="w3-container" style="padding-right: 5%; padding-left: 5%; padding-top:5%">
-              <div class="number-flex">
-              <div style="width:10%">
-                <span class="w3-round-small number-padding w3-amber">${1}</span>
-                </div>
-                <div style="width:90%">
-                ${question.question}
-              <div>
-            </div>
-              </header>
-              <div class="w3-container w3-center">
-                <hr width="100%" />
-              </div>
-              <div class="w3-container" style="padding-bottom:10px;">
-                <div class="answers"> ${plot} </div>
-          
-                <div
-                  style="padding-left: 20px; padding-right: 20px"
-                  id="feedbackTitle${question.number}"
-                ></div>
-            
-                <h5>
-                  <div
-                    style="padding-left: 20px; padding-right: 20px"
-                    id="feedback${question.number}"
-                  ></div>
-               </h5>
-              </div>
-
-              <footer
-                class="w3-container w3-center"
-                style="padding-top: 8px; padding-bottom: 20px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px;"
-              >
-              <button id='${submitID}'; class="w3-center submit">Continue</button>
-              </footer>
-            </div>
-          </div>
-          <div class="w3-col m1 l2 w3-container"></div>
+    let header = `  
+    <div class="number-flex">
+      <div style="flex-basis:10%">
+          <span class="w3-round-small number-padding w3-amber">${question.number}</span>
         </div>
-      </div>`;
-  },
-  smallNavBar: function (question, tabID, contentID, disable) {
-    return `<button href="#" class="navButton w3-large tablink" id = ${String(
-      tabID
-    )} onclick="tabHover(event,'${contentID}')" ${disable}>Question ${
-      question.number
-    }</button>`;
+      <div style="flex-basis:90%">
+        ${question.question}
+      </div>
+    </div>`;
+
+    let body = ` <div class="answers"> ${choices.join("")} </div>
+                  <div id="feedbackTitle${question.number}"></div> 
+                  <div id="feedback${question.number}"></div>`;
+    let footer = `<button id="${submitID}" class="submit">Submit</button>`;
+
+    return this.interpolateContent(header, body, footer, contentID);
   },
 
-  largeNavBar: function (question, tabID, contentID, disable) {
+  interpolateContent: function (
+    headContent,
+    bodyContent,
+    footerContent,
+    contentID
+  ) {
+    let header = `<div id="pk-quiz-card-header" >
+                    ${headContent}
+                  </div>`;
+    let body = ` <div id = "pk-quiz-card-body">
+                 
+                      ${bodyContent}
+              
+                  </div>`;
+    let footer = `<div id="pk-quiz-card-footer"
+                  class="card-footer"
+                >
+    
+    ${footerContent}
+    </div>`;
+    let container = `<div id="${contentID}" class="card-col-flexbox" style="display:none">${header} <hr class="hr-no-margin"/>  <br/>${body} <hr class="hr-no-margin"/> ${footer}
+    </div>`;
+    return container;
+  },
+
+  plotContainer: function (question, plot, contentID, submitID) {
+    let header = `  
+    <div class="number-flex">
+      <div style="flex-basis:10%">
+          <span class="w3-round-small number-padding w3-amber">${question.number}</span>
+        </div>
+      <div style="flex-basis:90%">
+        ${question.question}
+      </div>
+    </div>`;
+
+    let body = ` <div class="answers"> ${plot} </div>`;
+    let footer = `<button id="${submitID}" class="submit non-question-button">Continue</button>`;
+
+    return this.interpolateContent(header, body, footer, contentID);
+  },
+
+  smallNavBar: function (question, tabID, disable) {
+    return `<button href="#" class="navButton w3-large nav-button-small" id = ${String(
+      tabID
+    )} onclick="State.setActivePage(${
+      question.number - 1
+    })" ${disable}>Question ${question.number}</button>`;
+  },
+
+  largeNavBar: function (question, tabID, disable) {
     return `<button class = "nav-button-large" id = ${String(
       tabID
-    )}  onclick="tabHover(event,'${contentID}')" ${disable}> ${
+    )}  onclick="State.setActivePage(${question.number - 1})" ${disable}> ${
       question.number
     }</button>`;
   },
 
-  resultsContainer: function (results) {
-    return `
-    <div id="Results" class="tab" style="display:none">
-  
-  <div class = "w3-row">
-
-  <div class = 'w3-col m1 l2 w3-container'></div>
-  <div class='w3-col m10 l8 s12'>
-                        <div class="w3-white w3-card-2  w3-round-medium">
-                            <header class="w3-container" style="padding-top: 20px;">
-                            </header>
-                        <div class="w3-container w3-center">
-                        </div>
-                        <div class="w3-container w3-center" style="padding-bottom:10px;">
-                        <p>
-                        <table id="results-table" class = "w3-hoverable">
-                        <tr style="background: orange">
-                        <th>Question</th>
-                        <th>Correct Answer</th>
-                        <th>Your Answer</th>
-                        <th>Feedback</th>
-                        </tr>
-                           ${results}
-                        </table>
-                        </p>
-                        </div>
-                        <footer class="w3-container w3-center" style="padding-top: 8px; padding-bottom: 8px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px;">
-                        </footer>
-                      </div>
-                      </div>
-             </div>
-         
-          <div class = 'w3-col m1 l2 w3-container'></div>
-</div>
-        </div>
-        `;
+  resultsContainer: function (headerContent, results) {
+    let header = `<div class="results--center-title">${headerContent}</div>`;
+    let body = `  <table class = "results-table w3-hoverable">
+    <tr style="background: orange">
+    <th>Question</th>
+    <th>Correct Answer</th>
+    <th>Your Answer</th>
+    <th>Feedback</th>
+    </tr>
+       ${results}
+    </table>`;
+    let footer = "";
+    return this.interpolateContent(header, body, footer, "Results");
   },
   resultsDiv: function () {
     return `
           <div id="resultsContainer"></div>
               `;
   },
-  resultsMobileNav: function () {
+  resultsMobileNav: function (index) {
     return `
-    <button class="navButton w3-large tablink" style="display:none" id = "resultsMobileNav" onclick="tabHover(event,'Results')">Results</button>`;
+    <button class="navButton w3-large nav-button-small" style="display:none" id = "resultsMobileNav" onclick="State.setActivePage(Results)">Results</button>`;
   },
-  resultsDesktopNav: function () {
+  resultsDesktopNav: function (index) {
     return `
-      <button class="nav-button-large" style="display:none" id = "resultsDesktopNav" onclick="tabHover(event,'Results')">Results</button>`;
+      <button class="nav-button-large" style="display:none" id = "resultsDesktopNav" onclick="State.setActivePage('Results')">Results</button>`;
   },
 };
