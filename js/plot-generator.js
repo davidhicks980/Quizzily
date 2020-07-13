@@ -240,7 +240,6 @@ const renderPlot = (plotName, count) => {
 
     function getBolusCoords(input, parameters) {
       let i;
-      console.log(input);
       coords = {
         x: [],
         y: [],

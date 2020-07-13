@@ -3,7 +3,6 @@
 @import "./components/dh-style_toggle.css";
 @import "./libs/latex-renderer__katex.min.css";
 @import "./libs/css-framework__w3-css.css";
-@import "./components/dh-quiz-paginator";
 .ct-label {
   fill: rgba(0, 0, 0, 0.4);
   color: rgba(0, 0, 0, 0.4);
