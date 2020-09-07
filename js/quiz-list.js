@@ -67,7 +67,7 @@ const quizList = [
     ],
   },
   {
-    name: "pkKOPR",
+    name: "pkKOCR",
     title: "Multiple Dosing Regimen",
     description:
       "An interactive graph. <br /> A project from the UNC Kinetics Department",
